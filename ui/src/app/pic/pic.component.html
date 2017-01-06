@@ -1,0 +1,12 @@
+<div class="pic">
+    <canvas width="{{width}}" height="{{height}}" 
+            (mousedown)="drawStart($event)"
+            (mousemove)="drawMove($event)"
+            (mouseout)="drawEnd($event)"
+            (mouseup)="drawEnd($event)"
+            ></canvas>
+    <div class="buttons">
+        <button class="save" (click)="save()">Save</button>
+        <button class="delete" (click)="delete()">Delete</button>
+    </div>
+</div>

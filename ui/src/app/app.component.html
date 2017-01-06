@@ -1,0 +1,7 @@
+<h1>
+  Image Board
+</h1>
+<div class="board">
+    <app-pic *ngFor="let pic of pics" [localID]="pic.localID" (picDeleted)="deletePic($event)"></app-pic>
+    <div class="plus" (click)="add()">+</div>
+</div>

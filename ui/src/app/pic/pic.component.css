@@ -1,0 +1,22 @@
+.pic {
+    text-align: center;
+    padding: 10px;
+    float: left;
+}
+
+.pic:hover {
+    background: #ddd;
+}
+
+button {
+    opacity: 0
+}
+
+.pic:hover button {
+    opacity: 1
+}
+
+canvas {
+    cursor: crosshair;
+    background: #fff;
+}
