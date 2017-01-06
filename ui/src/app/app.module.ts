@@ -5,6 +5,7 @@ import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
 import { PicComponent } from './pic/pic.component';
+import { ImageService } from './image.service';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,7 @@ import { PicComponent } from './pic/pic.component';
     FormsModule,
     HttpModule
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  providers: [ ImageService ],
+  bootstrap: [ AppComponent ]
 })
 export class AppModule { }

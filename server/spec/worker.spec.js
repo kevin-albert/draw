@@ -9,6 +9,15 @@ jasmine.getEnv().defaultTimeoutInterval = 100;
 if (!fs.existsSync(IMG_DIR)) 
   fs.mkdirSync(IMG_DIR);
 
+afterEach(() => {
+  console.log('cleaning up test files');
+  if (fs.existsSync(IMG_DIR)) {
+    fs.readdirSync('/tmp/draw-test')
+      .forEach(f => fs.unlinkSync(`${IMG_DIR}/${f}`));
+  }
+  fs.rmdirSync(IMG_DIR);
+})
+
 describe('Worker', () => {
 
   it('should create a new record in the db', done => {
@@ -46,7 +55,6 @@ describe('Worker', () => {
         done
     ];
 
- 
     Observable.catch(
         Observable.from(invalidUpdates).flatMap(worker.draw),
         Observable.just('ok'))

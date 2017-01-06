@@ -4,14 +4,20 @@ import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 
 import { PicComponent } from './pic.component';
+import { ImageService } from '../image.service';
+import { MockImageService } from '../test';
 
 describe('PicComponent', () => {
-  let component: PicComponent;
-  let fixture: ComponentFixture<PicComponent>;
+  var component: PicComponent;
+  var fixture: ComponentFixture<PicComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PicComponent ]
+      declarations: [ PicComponent ],
+      providers: [
+          MockImageService,
+          {provide: ImageService, useClass: MockImageService}
+      ]
     })
     .compileComponents();
   }));
@@ -27,23 +33,10 @@ describe('PicComponent', () => {
   });
 
   it('should have save and delete buttons', async(() => {
-    let fixture = TestBed.createComponent(PicComponent);
     fixture.detectChanges();
     let compiled = fixture.debugElement.nativeElement;
     expect(compiled.querySelector('button.save').textContent).toContain('Save');
     expect(compiled.querySelector('button.delete').textContent).toContain('Delete');
   }));
  
-   it('should fire picDeleted event when delete is clicked', (done) => {
-    let fixture = TestBed.createComponent(PicComponent);
-    fixture.detectChanges();
-    let compiled = fixture.debugElement.nativeElement;
-    let component = fixture.componentInstance;
-    let deleteButton = compiled.querySelector('button.delete');
-    component.picDeleted.subscribe(event => {
-      expect(event.localID).toEqual(component.localID);
-      done();
-    })
-    deleteButton.click();
-  });
 });

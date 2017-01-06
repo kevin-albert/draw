@@ -26,6 +26,9 @@ function create(imageDir) {
         .doOnError(logError('unable to create image:'));
     },
 
+
+    all: all,
+
     draw: message => {
 
       //
@@ -47,12 +50,13 @@ function create(imageDir) {
         });
       }
 
-      return get(message.id).doOnNext(img => img.u = img.u.concat(message.u));
+      return get(message.id)
+          .doOnNext(img => img.u = img.u.concat(message.u));
     },
 
     saveChanges: () => 
       // find images with updates (non-empty update array)
-      all().filter(img => img.u)
+      all().filter(img => img.u.length)
         .flatMap(img => {
 
           // create new image file
@@ -60,16 +64,20 @@ function create(imageDir) {
 
           // apply each edit
           let edit = gm(fileName(img.p));
-          img.u.forEach(u => edit.drawPolyline(...u.l).stroke(u.c));
-          
+          let updates = img.u;
+          img.u = [];
+          updates.forEach(u => {
+            for (let i = 1; i < u.l.length; ++i) {
+              edit.drawLine(...u.l[i-1], ...u.l[i]);
+            }
+            edit.stroke(u.c);
+          });
+
           // write and return an observable
           return makeObservable(edit.write.bind(edit, fileName(p)))
               .flatMap(result => makeObservable(fs.unlink.bind(fs, fileName(img.p))))
               .map(result => img)
-              .doOnNext(img => {
-                img.p = p;
-                img.u = [];
-              })
+              .doOnNext(img => img.p = p)
               .doOnError(logError('unable to create image:'));
       })
   };

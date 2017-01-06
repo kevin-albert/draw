@@ -1,23 +1,44 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Http } from '@angular/http';
+import { environment } from '../environments/environment';
+
 import { PicComponent } from './pic/pic.component';
-import * as io from 'socket.io-client';
+import { ImageService } from './image.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit  {
   pics = [];
-  counter = 0;
-  socket:any;
+  imageService: ImageService;
+  loaded:boolean = false;
 
-  constructor() {
-    this.socket = io('http://localhost:3000')
+  constructor(imageService: ImageService) {
+    this.imageService = imageService;
+  }
+
+  ngOnInit() {
+    this.imageService.getAll()
+        .subscribe(all => {
+          this.pics = all;
+          this.imageService.getCreates().subscribe(this.onCreate.bind(this));
+          this.loaded = true;
+        }, error => {
+          // TODO better error handling
+          console.error('error loading initial image list', error);
+          this.imageService.getCreates().subscribe(this.onCreate.bind(this));
+        });
   }
 
   add() {
-    this.pics.push({localID: this.counter++});
+    this.imageService.create({});
+  }
+
+  onCreate(data) {
+    console.log(`onCreate: ${JSON.stringify(data, null, 2)}`);
+    this.pics.push(data);
   }
 
   deletePic(event) {

@@ -1,80 +1,57 @@
 /* tslint:disable:no-unused-variable */
 
-import { TestBed, async } from '@angular/core/testing';
+import { ComponentFixture, getTestBed, TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { PicComponent } from './pic/pic.component';
+import { PicComponent } from './pic';
+import { ImageService } from './image.service';
+import { MockImageService } from './test';
 
 describe('App: ImgFailUi', () => {
+  var fixture: ComponentFixture<AppComponent>;
+  var app: AppComponent;
+  var compiled;
+  var mockImageService: MockImageService;
+
   beforeEach(() => {
+    mockImageService = new MockImageService();
     TestBed.configureTestingModule({
       declarations: [
         AppComponent,
         PicComponent
       ],
+      providers: [
+        MockImageService,
+        { provide: ImageService, useValue: mockImageService }
+      ]
     });
+    fixture = TestBed.createComponent(AppComponent);
+    app = fixture.debugElement.componentInstance;
+    compiled = fixture.debugElement.nativeElement;
   });
 
-  it('should create the app', async(() => {
-    let fixture = TestBed.createComponent(AppComponent);
-    let app = fixture.debugElement.componentInstance;
+  it('should create the app', () => {
     expect(app).toBeTruthy();
-  }));
-
-  it('should render title in a h1 tag', async(() => {
-    let fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    let compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('Image Board');
-  }));
-
-  it('should remove picture when deleted', () => {
-    let fixture = TestBed.createComponent(AppComponent);
-    
-    // add 3 pics
-    let component = fixture.componentInstance;
-    component.add();
-    component.add();
-    component.add();
-
-    // verify that they were added
-    fixture.detectChanges();
-    let compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelectorAll('.pic').length).toBe(3)
-    expect(component.pics.length).toBe(3);
-    
-    // remove one
-    compiled.querySelectorAll('button.delete')[1].click();
-    fixture.detectChanges();
-
-    // verify that its removed
-    expect(component.pics.length).toBe(2);
-    expect(compiled.querySelectorAll('.pic').length).toBe(2)
   });
 
-  it('should remove final picture when deleted', () => {
-    let fixture = TestBed.createComponent(AppComponent);
-    
-    // add 3 pics
-    let component = fixture.componentInstance;
-    component.add();
-    component.add();
-    component.add();
-  
-    // verify that they were added
+  it('should not show plus option on startup', () => {
     fixture.detectChanges();
-  
-    let compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelectorAll('.pic').length).toBe(3)
-    expect(component.pics.length).toBe(3);
-  
-    for (var i = 0; i < 3; ++i) {
-      // remove one
-      compiled.querySelectorAll('button.delete')[0].click();
-      fixture.detectChanges();
-    }
+    
+    expect(compiled.querySelector('h1').textContent).toContain('Image Board');
+  });
 
-    // verify that its removed
-    expect(component.pics.length).toBe(0);
-    expect(compiled.querySelectorAll('.pic').length).toBe(0)
+  it('should load initial picture list', () => {
+    mockImageService._all = [
+      { id: 'A', p: '00000.png', u: [] },
+      { id: 'B', p: '11111.png', u: [] }
+    ];
+
+    // first - init the component, make the http call
+    fixture.detectChanges();
+    // second- create subcomponents from http call
+    fixture.detectChanges();
+
+    expect(compiled.querySelectorAll('app-pic').length).toEqual(2);
+    expect(app.pics[0]).toEqual({id: 'A', p: '00000.png', u: []});
+    expect(app.pics[1]).toEqual({id: 'B', p: '11111.png', u: []});
   });
 });

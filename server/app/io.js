@@ -2,7 +2,9 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
 const bodyParser = require('body-parser');
-const storage = require('./storage');
+const cors = require('cors');
+
+const Observable = require('rx').Observable;
 
 module.exports.create = create;
 
@@ -13,17 +15,23 @@ function create(worker, port, imageDir) {
     .set('x-powered-by', false)
     .set('strict routing', true)
     .use(bodyParser.json())
+    .use(cors())
     .get('/', (req, res) => res.end('ok'))
-    .get('/init', (req, res) => res.json(worker.init()))
+    .get('/all', (req, res) => 
+      worker.all().toArray().subscribe(
+          res.json.bind(res), 
+          error => console.error('init error:', error)))
     .use('/img', express.static(imageDir));
 
-  let sio = socketIO(http.Server(app));
+  let server = http.Server(app);
+  let sio = socketIO(server);
 
   return {
 
     // start web server
     start: function() {
-      app.listen(3000);
+      server.listen(3000);
+
       sio.on('connection', socket => {
         socket.on('create', () => {
           worker.create()
@@ -39,7 +47,13 @@ function create(worker, port, imageDir) {
         });
       });
 
-      worker.snapshot.subscribe(data => sio.sockets.emit('snapshot', data));
+      Observable.interval(15000)
+          .flatMap(worker.saveChanges)
+          .subscribe(
+            result => sio.sockets.emit('saved', result),
+            error => console.error('save error:', error)
+          );
     }
+
   };
 }
